@@ -4,8 +4,11 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import compression from "compression";
 import cors from "cors";
+import mongoose from "mongoose";
 
 const app = express();
+
+const api = require("./routes/auth.routes");
 
 app.use(
   cors({
@@ -16,9 +19,28 @@ app.use(
 app.use(compression());
 app.use(cookieParser());
 app.use(bodyParser.json());
+app.use("/api", api);
 
 const server = http.createServer(app);
 
-server.listen(8088, () => {
+const port = process.env.PORT || 8088;
+
+server.listen(port, () => {
   console.log("Server running on 8088");
 });
+
+const MONGO_URL =
+  "mongodb+srv://develijahndungu:monkey12@cluster0.izq45my.mongodb.net/?retryWrites=true&w=majority";
+
+mongoose.Promise = Promise;
+mongoose
+  .connect(MONGO_URL)
+  .then((x) => {
+    console.log(
+      `Connected to Mongo! Database name: "${x.connections[0].name}"`
+    );
+  })
+  .catch((err) => {
+    console.error("Error connecting to mongo", err.reason);
+  });
+mongoose.connection.on("error", (error: Error) => console.log(error));
