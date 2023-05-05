@@ -1,6 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 // const { getUserByEmail, getUserById } = require("../models/user");
-import { getUserByEmail, getUserById } from "../services/auth.service";
+import {
+  getUserByEmail,
+  getUserById,
+  updateUser,
+} from "../services/auth.service";
 const UserModel = require("../models/user");
 
 const express = require("express");
@@ -11,10 +15,6 @@ const router = express.Router();
 const authorize = require("../middleware/auth");
 const { check, validationResult } = require("express-validator");
 
-enum UserRole {
-  ADMIN = "ADMIN",
-  USER = "USER",
-}
 // Sign-up
 router.post(
   "/register",
@@ -23,12 +23,12 @@ router.post(
       .not()
       .isEmpty()
       .isLength({ min: 3 })
-      .withMessage("firstName must be atleast 3 characters long"),
+      .withMessage("firstName must be at least 3 characters long"),
     check("lastName")
       .not()
       .isEmpty()
       .isLength({ min: 3 })
-      .withMessage("lastName must be atleast 3 characters long"),
+      .withMessage("lastName must be at least 3 characters long"),
     check("email", "Email is required").not().isEmpty(),
     check("phoneNumber", "Phone number is required").not().isEmpty(),
     check("password", "Password should be between 4 to 8 characters long")
@@ -114,15 +114,19 @@ router
   .patch(authorize, async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const { firstName, lastName, email } = req.body;
+      const { firstName, lastName, email, phoneNumber } = req.body;
 
       const user = await getUserById(id);
-      user.firstName = firstName;
-      user.lastName = lastName;
-      user.email = email;
 
-      await user.save();
-      return res.status(200).json(user).end();
+      user.firstName = firstName?.trim();
+      user.lastName = lastName?.trim();
+      user.email = email?.trim();
+      user.phoneNumber = phoneNumber?.trim();
+      await updateUser(id, user);
+      return res
+        .status(200)
+        .json({ message: "User updated successfully" })
+        .end();
     } catch (error) {
       return res.sendStatus(error);
     }
