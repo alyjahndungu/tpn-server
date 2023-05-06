@@ -97,7 +97,7 @@ router.post("/login", async (req: Request, res: Response) => {
 });
 
 router
-  .route("/user-profile/:id")
+  .route("/users/:id")
   .get(authorize, async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
@@ -114,15 +114,7 @@ router
   .patch(authorize, async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const { firstName, lastName, email, phoneNumber } = req.body;
-
-      const user = await getUserById(id);
-
-      user.firstName = firstName?.trim();
-      user.lastName = lastName?.trim();
-      user.email = email?.trim();
-      user.phoneNumber = phoneNumber?.trim();
-      await updateUser(id, user);
+      await updateUser(id, req.body);
       return res
         .status(200)
         .json({ message: "User updated successfully" })
