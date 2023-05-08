@@ -62,6 +62,8 @@ router.post(
           .catch((error: Error) => {
             res.status(500).json({
               error: error,
+              message:
+                "Sorry, something went wrong on our server. Please try again",
             });
           });
       });
@@ -78,7 +80,9 @@ router.post("/login", async (req: Request, res: Response) => {
     const validPassword = await bcrypt.compare(password, user.password);
 
     if (!validPassword)
-      return res.status(400).json({ error: "Password is wrong" });
+      return res
+        .status(400)
+        .json({ statusCode: 400, message: "Password is wrong!" });
 
     const payload = { email, role: user.role, userId: user._id };
     const jwtToken = jwt.sign(payload, "xenon-secret", { expiresIn: "6h" });
@@ -91,6 +95,7 @@ router.post("/login", async (req: Request, res: Response) => {
     });
   } catch (error) {
     return res.status(401).json({
+      statusCode: 401,
       message: "Authentication failed, Please check your credentials",
     });
   }
